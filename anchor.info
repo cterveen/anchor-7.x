@@ -1,0 +1,5 @@
+name = Anchor
+description = Create an index for books based on named anchors
+core = 7.x
+package = My Modules
+dependencies[] = book

@@ -1,0 +1,194 @@
+<?php
+ 
+ /**
+ * @file
+ * A page module that strips anchored tags from a book and creates an index from these
+ */
+  
+ 
+ /**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path 
+ *   Which path of the site we're using to display help
+ * @param arg 
+ *   Array that holds the current path as returned from arg() function
+ */
+function anchor_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#anchor":
+      return '' . t("Displays an index for a book based on named anchors.") . '';
+      break;
+  }
+}
+
+/**
+* Implements hook_menu().
+*/
+
+function anchor_menu() {
+  $items = array();
+  $items['book/index/%'] = array(
+     'title' => 'Index',
+     'page callback' => '_anchor_page',
+     'page arguments' => array(2, 'index'),
+     'access arguments' => array('access content'),
+     'type' => MENU_CALLBACK,
+   );
+   return $items;
+}
+
+/**
+ * Page callback for hook_menu()
+ *
+ * Takes all the content of a node and its children and collects all named
+ * anchors with a certain prefix. The named anchors are then printed on
+ * alphabetical order.
+ *
+ * @param $nid
+ *   An integer representing the node id (nid) of the node to make an index 
+ *   of.
+ *
+ * @param $prefix
+ *   A string that acts as an optional prefix for filtering anchors to be 
+ *   collected.
+ *
+ * @return
+ *   The content of the index
+*/
+
+function _anchor_page($nid, $prefix) {
+  $node = node_load($nid);      
+  
+  if (isset($node->book)) {
+  
+    // get the contents of the book
+    $tree = book_menu_subtree_data($node->book);        
+    $contents = anchor_index_traverse($tree, $prefix);
+    
+    // filter out named anchors
+    $index = array();
+    $num_items = 0;
+    $found = preg_match_all("/name=\"([^\"]*)\"/", $contents, $matches);    
+    foreach ($matches[1] as $match) {
+      if (preg_match("/^(\/node\/\d+#)(.+)/", $match, $name)) {
+        $cap = ucfirst(substr($name[2], 0, 1));
+        
+        // digits to #
+        if (is_numeric($cap)) {
+          $cap = "#";
+        }
+        
+        if (isset($index[$cap])) {
+          $array = $index[$cap];
+        }
+        else {
+          $array = array();
+        $num_items += 2;
+        }
+        
+        // array[phrase] => location
+        $array[$name[2]] = $name[1] . $prefix . $name[2];
+        
+        $index[$cap] = $array;
+        $num_items++;
+      }
+    }
+    
+    // create page output
+    $text = "<p>";
+    
+    // start with an # A - Z
+    foreach (array("#","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z") as $cap) {
+      if (array_key_exists($cap, $index)) {
+        $text .= "<strong><a href = \"#" . $cap . "\">" . $cap . "</a></strong> ";
+      }
+      else {
+        $text .= $cap;
+      }
+      if ($cap != "Z") {
+        $text .= " - ";
+      }
+    }
+    
+    $text .= "</p>";
+    
+    $text .= "<table><tr style = \"background: inherit\"><td width = \"50%\" valign = \"top\">";
+    
+    // iterate over $index and print links
+    $caps = array_keys($index);
+    $item = 0;
+    sort($caps);
+    foreach ($caps as $cap) {
+      $phrases = array_keys($index[$cap]);
+      
+      // Header and named anchor for new cap.
+      $text .= "<a name = \"". $cap . "\"></a><p><strong>" . $cap . "</strong><br>\n";
+      
+      sort($phrases);
+      foreach ($phrases as $phrase) {
+        $text .= "<a href = \"" . $index[$cap][$phrase] . "\">" . $phrase . "</a><br>\n";
+      }
+      $text .= "</p>\n";
+      
+      // new column?
+      $before = $item;
+      $item += count($phrases) + 2;
+      
+      if (($before < $num_items/2) and ($item >= $num_items/2)) {
+        $text .= "</td><td width = \"50%\" valign = \"top\">";
+      }
+    }
+    
+    $text .= "</td></tr></table>";
+    
+    $page_array['index'] = array(
+      '#title' => t('Index'),
+      '#markup' => t($text),
+    );
+  
+    return $page_array;
+  }
+    else {
+      drupal_not_found();
+    }
+}
+
+/**
+ * Traverses the book tree and collects all contents for further processing
+ *
+ * During the traversal, named anchors are addapted to "node/nid#anchor"
+ *
+ * @param $tree
+ *   A subtree of the book menu hierarchy, rooted at the current page.
+ *
+ * @param $prefix
+ *   A string that acts as an optional prefix for filtering anchors to be 
+ *   collected.
+ *
+ * @return
+ *   The output generated in visiting each node.
+ */
+
+function anchor_index_traverse($tree, $prefix) {
+    $output = '';    
+    
+    foreach ($tree as $data) {
+      // Note- access checking is already performed when building the tree.
+      if ($node = node_load($data['link']['nid'], FALSE)) {
+        $children = '';
+
+        if ($data['below']) {
+          $children = anchor_index_traverse($data['below'], $prefix);
+        }
+      }
+      
+      $contents = book_node_export($node, $children);
+      
+      $output .=  preg_replace("/name=\"" . $prefix . "/", "name=\"/node/" . $data['link']['nid'] . "#", $contents);
+    }
+    
+    return $output;  
+}

@@ -12,10 +12,9 @@
  * the same function name.
  *
  * get it here: https://simplehtmldom.sourceforge.io/
+ * save it to: sites/all/libraries/simle_html_dom/
  */
-if (!function_exists("str_get_html")) {
-  include("simple_html_dom.php");
-}
+include_once("sites/all/libraries/simple_html_dom/simple_html_dom.php");
  
  /**
  * Implements hook_help().

@@ -7,9 +7,6 @@
   
  /**
  * Load the PHP simple HTML DOM parser if not done yet
- * Somehow include_once does not work as I expect, check whether function
- * str_get_html exist. This might potentially break if someone else uses
- * the same function name.
  *
  * get it here: https://simplehtmldom.sourceforge.io/
  * save it to: sites/all/libraries/simle_html_dom/

@@ -2,4 +2,5 @@ name = Anchor
 description = Create an index for books based on named anchors
 core = 7.x
 package = Book
-dependencies[] = book 
+dependencies[] = book
+dependencies[] = libraries

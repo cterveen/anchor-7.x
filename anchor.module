@@ -6,12 +6,18 @@
  */
   
  /**
+ * Manually load the libraries module to get access to libraries_get_path();
+ * This should not be necessary!
+ */
+include_once(drupal_get_path("module", "libraries") . "/libraries.module");
+ 
+ /**
  * Load the PHP simple HTML DOM parser if not done yet
  *
  * get it here: https://simplehtmldom.sourceforge.io/
  * save it to: sites/all/libraries/simle_html_dom/
  */
-include_once("sites/all/libraries/simple_html_dom/simple_html_dom.php");
+include_once(libraries_get_path("simple_html_dom") . "/simple_html_dom.php");
  
  /**
  * Implements hook_help().

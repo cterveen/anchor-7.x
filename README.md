@@ -7,7 +7,7 @@ anchor-7.x is a Drupal 7 module that that adds index functionality to Drupal boo
 
 The module can be considered an alpha version but is being used and works well. The coding was not brought to standards. The RTF document was tested in Microsoft Word en Libre Office writer. Options are available. A (useful) help page is not available, but some details are in help.md. Internationalisation and localisation is not available. The module is not in the Drupal module repository.
 
-No further development is intended. The module has been ported to Drupal 9.x: [bookindex9.x](https://github.com/cterveen/bookindex-9.x)
+This module is archived. The module has been ported to Drupal 9.x: [bookindex9.x](https://github.com/cterveen/bookindex-9.x)
 
 ## Installation
 
